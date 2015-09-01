@@ -28,10 +28,14 @@ public class PackageTask extends Task
     /** the war file. */
     private String war;
     
+    /** the backup path. */
+    private String backupPath;
+    
     public void execute()
     {
         try
         {
+            //important for shrinkwrap (otherwise classloading won't work with ant)
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
             
             BuildTool tool = new BuildTool();
@@ -87,7 +91,14 @@ public class PackageTask extends Task
                 }
             }
             
-            tool.artifactResolvingHelper(new Resolver(tool));
+            Resolver resolver = new Resolver(tool);
+            
+            if (backupPath != null)
+            {
+                resolver.setBackupPath(backupPath);
+            }
+            
+            tool.artifactResolvingHelper(resolver);
             
             tool.projectArtifact("com.sibvisions.demos", "swarm", "0.1", "war", fiWar);
             tool.build(FileUtil.removeExtension(FileUtil.getName(outputFile)), Paths.get(FileUtil.getDirectory(outputFile)));
@@ -111,6 +122,11 @@ public class PackageTask extends Task
     public void setOutputFile(String outputFile)
     {
         this.outputFile = outputFile;
+    }
+    
+    public void setBackupPath(String backupPath)
+    {
+        this.backupPath = backupPath;
     }
     
 }   // PackageTask

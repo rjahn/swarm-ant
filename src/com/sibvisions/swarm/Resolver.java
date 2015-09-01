@@ -18,6 +18,7 @@ import org.wildfly.swarm.tools.ArtifactSpec;
 import org.wildfly.swarm.tools.BuildTool;
 
 import com.sibvisions.swarm.url.ByteURLStreamHandler;
+import com.sibvisions.util.type.FileUtil;
 
 
 public class Resolver implements ArtifactResolvingHelper
@@ -25,6 +26,9 @@ public class Resolver implements ArtifactResolvingHelper
     private BuildTool tool;
 
     private Ivy ivy;
+    
+    private String backupPath;
+    
     
     public Resolver(BuildTool pTool)
     {
@@ -102,12 +106,23 @@ public class Resolver implements ArtifactResolvingHelper
             
             if (retreport.getRetrievedFiles().size() > 0)
             {
-                return new ArtifactSpec("compile", pSpec.groupId, pSpec.artifactId, pSpec.version, "jar", null, 
-                                        (File)((List<?>)retreport.getRetrievedFiles()).get(0));
+                File file = (File)((List<?>)retreport.getRetrievedFiles()).get(0);
+                
+                if (backupPath != null)
+                {
+                    FileUtil.copy(file, new File(backupPath, file.getName()));
+                }
+                
+                return new ArtifactSpec("compile", pSpec.groupId, pSpec.artifactId, pSpec.version, "jar", null, file); 
             }
         }
 
         return null;
+    }
+    
+    public void setBackupPath(String backupPath)
+    {
+        this.backupPath = backupPath;
     }
     
 }
